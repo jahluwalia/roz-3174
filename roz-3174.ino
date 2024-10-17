@@ -1,6 +1,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <NewPing.h>
+#include "Waveshare_LCD1602_RGB.h"
 
 // Pins
 #define DS18B20_PIN 2    // DS18B20 connected to pin 2
@@ -34,7 +35,8 @@ int rainbow[][3] = {
 int index = 0;
 unsigned long previousMillis = 0;    // Stores last LED update time
 const long interval = 1000;          // Interval at which to change LED color
-
+Waveshare_LCD1602_RGB lcd(16,2);  //16 characters and 2 lines of show
+int r,g,b,t=0;
 void setup() {
   Serial.begin(9600);
 
@@ -47,6 +49,13 @@ void setup() {
   pinMode(BLUE_PIN, OUTPUT);
 
   Serial.println("Roz is ready!");
+     // initialize lcd
+    lcd.init();
+    
+    lcd.setCursor(0,0);
+    lcd.send_string("Hello Friends");
+    lcd.setCursor(0,1);
+    lcd.send_string("Roz is Ready!");
 }
 
 void loop() {
@@ -83,5 +92,12 @@ void loop() {
     }
   }
 
-  delay(1000);  // Delay between sensor readings
+  r = (abs(sin(3.14*t/180)))*255;
+  g = (abs(sin(3.14*(t + 60)/180)))*255;
+  b = (abs(sin(3.14*(t + 120)/180)))*255;
+  t = t + 3;
+  lcd.setRGB(r,g,b);
+
+
+  delay(500);  // Delay between sensor readings
 }
