@@ -175,6 +175,13 @@ void printWithCustomCharacters(const char* line) {
   }
 }
 
+void setLEDColor(const Color &color) {
+  analogWrite(RED_PIN, color.red);
+  analogWrite(GREEN_PIN, color.green);
+  analogWrite(BLUE_PIN, color.blue);
+}
+
+
 // Function to set the message and color on the LCD screen
 void setLCDMessageAndColor(const char* line1, const char* line2, const Color &color) {
   lcd.setRGB(color.red, color.green, color.blue);  // Set the color of the LCD backlight
@@ -185,6 +192,38 @@ void setLCDMessageAndColor(const char* line1, const char* line2, const Color &co
   lcd.setCursor(0, 1);  // Set cursor to the second line
   printWithCustomCharacters(line2);  // Print the second line with custom character handling
 }
+
+const int MAX_RECORDS = 10;  // Maximum number of temperature records
+float tempRecords[MAX_RECORDS];
+unsigned long timeRecords[MAX_RECORDS];
+int recordIndex = 0;
+// Time and temperature thresholds
+const unsigned long timeThreshold = 10000;  // 10 seconds
+const float tempDropThreshold = 5.0;  // Temperature drop threshold (e.g., 5°F)
+
+
+
+// Function to add new temperature records and keep the buffer circular
+void addTemperatureRecord(float currentTemperature, unsigned long currentTime) {
+  tempRecords[recordIndex] = currentTemperature;
+  timeRecords[recordIndex] = currentTime;
+  // Increment the index and wrap around if needed
+  recordIndex = (recordIndex + 1) % MAX_RECORDS;
+}
+
+// Function to check if the temperature dropped by the threshold within the last time window
+bool checkTemperatureDrop(float currentTemperature, unsigned long currentTime) {
+  for (int i = 0; i < MAX_RECORDS; i++) {
+    // Check the time difference and temperature drop
+    if (currentTime - timeRecords[i] <= timeThreshold) {
+      if (tempRecords[i] - currentTemperature >= tempDropThreshold) {
+        return true;  // A significant drop occurred within the window
+      }
+    }
+  }
+  return false;  // No significant drop found
+}
+
 
 void setup() {
   Serial.begin(9600);
@@ -204,10 +243,28 @@ void setup() {
   Serial.println("Roz is ready!");
 
   // Example of using custom characters in messages
-  setLCDMessageAndColor("Hello Friends,", "I am Roz the _tree _robot", COLOR_GREEN);
+  setLCDMessageAndColor("Hello Friends,", "I am Roz", COLOR_GREEN);
 }
 
 void loop() {
-  // Your loop code for temperature, proximity, etc.
+  unsigned long currentTime = millis();
+  
+  // Read the current temperature from the DS18B20 sensor
+  sensors.requestTemperatures();
+  float currentTemperature = sensors.getTempFByIndex(0);
+  Serial.print("Temperature: ");
+  Serial.print(currentTemperature);
+  Serial.println("°F");
+
+  // Add the current temperature and timestamp to the circular buffer
+  addTemperatureRecord(currentTemperature, currentTime);
+
+  // Check if there's been a temperature drop in the last 10 seconds
+  if (checkTemperatureDrop(currentTemperature, currentTime)) {
+    Serial.println("Temperature dropped by 5°F or more within 10 seconds!");
+    setLCDMessageAndColor("A snow storm!", "Animals, I will help!", COLOR_BLUE);
+    setLEDColor(COLOR_BLUE);
+  }
+
   delay(1000);  // Delay between sensor readings
 }
