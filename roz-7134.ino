@@ -4,15 +4,10 @@
 #include "Waveshare_LCD1602_RGB.h"
 
 // Pins
-#define DS18B20_PIN 2    // DS18B20 connected to pin 2
-#define TRIGGER_PIN 9    // HC-SR04 trigger pin connected to pin 9
-#define ECHO_PIN 10      // HC-SR04 echo pin connected to pin 10
-#define MAX_DISTANCE 200 // Maximum distance we want to measure (in cm)
-
-// RGB LED Pins
-#define RED_PIN 6
-#define GREEN_PIN 5
-#define BLUE_PIN 3
+#define DS18B20_PIN 2     // DS18B20 connected to pin 2
+#define TRIGGER_PIN 9     // HC-SR04 trigger pin connected to pin 9
+#define ECHO_PIN 10       // HC-SR04 echo pin connected to pin 10
+#define MAX_DISTANCE 200  // Maximum distance we want to measure (in cm)
 
 // DS18B20 Temperature Sensor Setup
 OneWire oneWire(DS18B20_PIN);
@@ -29,168 +24,38 @@ struct Color {
 };
 
 // Define some standard colors
-const Color COLOR_RED = {255, 0, 0};
-const Color COLOR_GREEN = {0, 255, 0};
-const Color COLOR_BLUE = {0, 0, 255};
-const Color COLOR_YELLOW = {255, 255, 0};
-const Color COLOR_PURPLE = {128, 0, 128};
-const Color COLOR_ORANGE = {255, 165, 0};
-const Color COLOR_WHITE = {255, 255, 255};
-
-// Custom characters
-byte snowflake_char[8] = {
-  0b00100,
-  0b01010,
-  0b00100,
-  0b01010,
-  0b10101,
-  0b00100,
-  0b01010,
-  0b00100
-};
-
-byte heart_char[8] = {
-  0b00000,
-  0b01010,
-  0b11111,
-  0b11111,
-  0b01110,
-  0b00100,
-  0b00000,
-  0b00000
-};
-
-byte tree_char[8] = {
-  0b00100,
-  0b01110,
-  0b00100,
-  0b01110,
-  0b10101,
-  0b00100,
-  0b00100,
-  0b00100
-};
-
-byte raindrop_char[8] = {
-  0b00100,
-  0b00100,
-  0b00100,
-  0b01110,
-  0b11111,
-  0b11111,
-  0b01110,
-  0b00000
-};
-
-byte sun_char[8] = {
-  0b00100,
-  0b10101,
-  0b01110,
-  0b11111,
-  0b01110,
-  0b10101,
-  0b00100,
-  0b00000
-};
-
-byte house_char[8] = {
-  0b00100,
-  0b01110,
-  0b11111,
-  0b10101,
-  0b10101,
-  0b11111,
-  0b00000,
-  0b00000
-};
-
-byte gosling_char[8] = {
-  0b00100,
-  0b01110,
-  0b01110,
-  0b00100,
-  0b01110,
-  0b10100,
-  0b00100,
-  0b00000
-};
-
-byte robot_char[8] = {
-   0b01110,  // Top of the head
-  0b10001,  // Sides of the head
-  0b10101,  // Eyes
-  0b10001,  // Middle part (between eyes)
-  0b11111,  // Mouth (wide)
-  0b10001,  // Base of the face
-  0b10001,  // Chin
-  0b00000   // Empty
-};
+const Color COLOR_RED = { 255, 0, 0 };
+const Color COLOR_GREEN = { 0, 255, 0 };
+const Color COLOR_BLUE = { 0, 0, 255 };
+const Color COLOR_YELLOW = { 255, 255, 0 };
+const Color COLOR_PURPLE = { 128, 0, 128 };
+const Color COLOR_ORANGE = { 255, 165, 0 };
+const Color COLOR_WHITE = { 255, 255, 255 };
 
 // Waveshare LCD setup
 Waveshare_LCD1602_RGB lcd(16, 2);
 
-// Load custom characters into the LCD
-void loadCustomCharacters() {
-  lcd.customSymbol(0, snowflake_char);
-  lcd.customSymbol(1, heart_char);
-  lcd.customSymbol(2, tree_char);
-  lcd.customSymbol(3, raindrop_char);
-  lcd.customSymbol(4, sun_char);
-  lcd.customSymbol(5, house_char);
-  lcd.customSymbol(6, gosling_char);
-  lcd.customSymbol(7, robot_char);
-}
-
-// Function to print strings with custom characters using if-statements
-void printWithCustomCharacters(const char* line) {
-  while (*line) {
-    if (strncmp(line, "_snowflake", 10) == 0) {
-      lcd.write_char(0);  // Snowflake custom character
-      line += 10;
-    } else if (strncmp(line, "_heart", 6) == 0) {
-      lcd.write_char(1);  // Heart custom character
-      line += 6;
-    } else if (strncmp(line, "_tree", 5) == 0) {
-      lcd.write_char(2);  // Tree custom character
-      line += 5;
-    } else if (strncmp(line, "_raindrop", 9) == 0) {
-      lcd.write_char(3);  // Raindrop custom character
-      line += 9;
-    } else if (strncmp(line, "_sun", 4) == 0) {
-      lcd.write_char(4);  // Sun custom character
-      line += 4;
-    } else if (strncmp(line, "_house", 6) == 0) {
-      lcd.write_char(5);  // House custom character
-      line += 6;
-    } else if (strncmp(line, "_gosling", 8) == 0) {
-      lcd.write_char(6);  // Gosling custom character
-      line += 8;
-    } else if (strncmp(line, "_robot", 6) == 0) {
-      lcd.write_char(7);  // Robot custom character
-      line += 6;
-    } else {
-      lcd.write_char(*line);  // Write regular characters
-      line++;
-    }
-  }
-}
-
-void setLEDColor(const Color &color) {
-  analogWrite(RED_PIN, color.red);
-  analogWrite(GREEN_PIN, color.green);
-  analogWrite(BLUE_PIN, color.blue);
-}
-
-
-// Function to set the message and color on the LCD screen
-void setLCDMessageAndColor(const char* line1, const char* line2, const Color &color) {
+/**
+ * FUNCTION: setLCDMessageAndColor
+ * This function displays a message on Roz's screen and changes the backlight color.
+ * It clears the screen before writing, sets the cursor for each line,
+ * and then writes the text provided for each line.
+ * 
+ * In the story: Roz is sharing messages with the world or warning about events.
+ * 
+ * Parameters:
+ * - line1: The message for the first line of the LCD screen.
+ * - line2: The message for the second line of the LCD screen.
+ * - color: The RGB color for the LCD backlight.
+ */
+void setLCDMessageAndColor(const char* line1, const char* line2, const Color& color) {
   lcd.setRGB(color.red, color.green, color.blue);  // Set the color of the LCD backlight
-
-  lcd.setCursor(0, 0);  // Set cursor to the first line
-  printWithCustomCharacters(line1);  // Print the first line with custom character handling
-
-  lcd.setCursor(0, 1);  // Set cursor to the second line
-  printWithCustomCharacters(line2);  // Print the second line with custom character handling
+  lcd.clear();                                    // Clear the screen to remove previous messages
+  lcd.setCursor(0, 0);                            // Set cursor to the first line
+  lcd.send_string(line1);                         // Write the first line to the LCD
+  
+  lcd.setCursor(0, 1);                            // Set cursor to the second line
+  lcd.send_string(line2);                         // Write the second line to the LCD
 }
 
 const int MAX_RECORDS = 10;  // Maximum number of temperature records
@@ -199,72 +64,160 @@ unsigned long timeRecords[MAX_RECORDS];
 int recordIndex = 0;
 // Time and temperature thresholds
 const unsigned long timeThreshold = 10000;  // 10 seconds
-const float tempDropThreshold = 5.0;  // Temperature drop threshold (e.g., 5°F)
+const float tempDropThreshold = 10.0;       // Temperature drop threshold (e.g., 10°F)
+const float tempRiseThreshold = 10.0;       // Temperature rise threshold (e.g., 10°F)
 
-
-
-// Function to add new temperature records and keep the buffer circular
+/**
+ * FUNCTION: addTemperatureRecord
+ * This function keeps track of the most recent temperature readings and their timestamps.
+ * It stores the temperature and time in a circular buffer (fixed-size memory).
+ * 
+ * In the story: Roz remembers the recent temperatures to figure out if something unusual is happening.
+ * 
+ * Parameters:
+ * - currentTemperature: The current temperature reading from the sensor.
+ * - currentTime: The current time in milliseconds.
+ */
 void addTemperatureRecord(float currentTemperature, unsigned long currentTime) {
   tempRecords[recordIndex] = currentTemperature;
   timeRecords[recordIndex] = currentTime;
-  // Increment the index and wrap around if needed
-  recordIndex = (recordIndex + 1) % MAX_RECORDS;
+  recordIndex = (recordIndex + 1) % MAX_RECORDS; // Wrap around if the index exceeds MAX_RECORDS
 }
 
-// Function to check if the temperature dropped by the threshold within the last time window
+/**
+ * FUNCTION: checkTemperatureDrop
+ * This function checks if the temperature has dropped significantly within the last 10 seconds.
+ * 
+ * In the story: Roz detects if a snowstorm is coming.
+ * 
+ * Parameters:
+ * - currentTemperature: The current temperature reading.
+ * - currentTime: The current time in milliseconds.
+ * 
+ * Returns:
+ * - true if a significant drop is detected; false otherwise.
+ */
 bool checkTemperatureDrop(float currentTemperature, unsigned long currentTime) {
   for (int i = 0; i < MAX_RECORDS; i++) {
-    // Check the time difference and temperature drop
     if (currentTime - timeRecords[i] <= timeThreshold) {
       if (tempRecords[i] - currentTemperature >= tempDropThreshold) {
-        return true;  // A significant drop occurred within the window
+        return true;
       }
     }
   }
-  return false;  // No significant drop found
+  return false;
 }
 
+/**
+ * FUNCTION: checkTemperatureRise
+ * This function checks if the temperature has risen significantly within the last 10 seconds.
+ * 
+ * In the story: Roz detects if there's a fire nearby.
+ * 
+ * Parameters:
+ * - currentTemperature: The current temperature reading.
+ * - currentTime: The current time in milliseconds.
+ * 
+ * Returns:
+ * - true if a significant rise is detected; false otherwise.
+ */
+bool checkTemperatureRise(float currentTemperature, unsigned long currentTime) {
+  for (int i = 0; i < MAX_RECORDS; i++) {
+    if (currentTime - timeRecords[i] <= timeThreshold) {
+      if (currentTemperature - tempRecords[i] >= tempRiseThreshold) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
+/**
+ * FUNCTION: setup
+ * This is where Roz "wakes up" and prepares her sensors and screen.
+ * It only runs once when Roz is turned on.
+ * 
+ * In the story: Roz gets ready to greet the world and remember the initial temperature.
+ */
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(9600); // Start communication so Roz can "talk" to us through the computer
 
-  // Initialize the DS18B20 sensor
+  // Turn on the temperature sensor
   sensors.begin();
 
-  // Initialize RGB LED pins
-  pinMode(RED_PIN, OUTPUT);
-  pinMode(GREEN_PIN, OUTPUT);
-  pinMode(BLUE_PIN, OUTPUT);
-
-  // Initialize the LCD
+  // Set up Roz's screen
   lcd.init();
-  loadCustomCharacters();
 
+  // Take the first temperature reading to fill Roz's memory
+  sensors.requestTemperatures();
+  float initialTemperature = sensors.getTempFByIndex(0);
+  for (int i = 0; i < MAX_RECORDS; i++) {
+    tempRecords[i] = initialTemperature;
+    timeRecords[i] = millis(); // Record the time Roz started
+  }
+
+  // Say hello to the world!
   Serial.println("Roz is ready!");
-
-  // Example of using custom characters in messages
-  setLCDMessageAndColor("Hello Friends,", "I am Roz", COLOR_GREEN);
+  setLCDMessageAndColor("My Name is Roz,", "The Wild Robot", COLOR_GREEN);
 }
 
+/**
+ * FUNCTION: loop
+ * This is where Roz continuously checks her environment for changes.
+ * It repeats over and over while Roz is powered on.
+ * 
+ * In the story: Roz monitors the temperature and proximity to detect important events and respond.
+ */
 void loop() {
-  unsigned long currentTime = millis();
-  
-  // Read the current temperature from the DS18B20 sensor
+  unsigned long currentTime = millis(); // The current time in milliseconds
+
+  // Read the temperature
   sensors.requestTemperatures();
   float currentTemperature = sensors.getTempFByIndex(0);
   Serial.print("Temperature: ");
   Serial.print(currentTemperature);
   Serial.println("°F");
 
-  // Add the current temperature and timestamp to the circular buffer
+  // Save the temperature and time
   addTemperatureRecord(currentTemperature, currentTime);
 
-  // Check if there's been a temperature drop in the last 10 seconds
+  // Priority 1: Check for snowstorm (big temperature drop)
   if (checkTemperatureDrop(currentTemperature, currentTime)) {
-    Serial.println("Temperature dropped by 5°F or more within 10 seconds!");
-    setLCDMessageAndColor("A snow storm!", "Animals, I will help!", COLOR_BLUE);
-    setLEDColor(COLOR_BLUE);
+    Serial.println("Temperature dropped by 10°F or more within 10 seconds!");
+    setLCDMessageAndColor("A snow storm!", "Get to Shelter!", COLOR_BLUE);
+    delay(15000); // Wait so Roz can show this message
+    return; // Skip checking anything else for now
   }
 
-  delay(1000);  // Delay between sensor readings
+  // Priority 1: Check for fire (big temperature rise)
+  if (checkTemperatureRise(currentTemperature, currentTime)) {
+    Serial.println("Temperature rose by 10°F or more within 10 seconds!");
+    setLCDMessageAndColor("Danger, Fire!", "Evacuate!", COLOR_RED);
+    delay(15000); // Wait so Roz can show this message
+    return; // Skip checking anything else for now
+  }
+
+  // Priority 2: Check proximity (how close something is to Roz)
+  unsigned int distance = sonar.ping_cm(); // Measure the distance
+  if (distance > 0) {
+    Serial.print("Proximity: ");
+    Serial.print(distance);
+    Serial.println(" cm");
+
+    if (distance > 10 && distance < 50) { // Something is close, but not too close
+      setLCDMessageAndColor("Hi! How can", "I assist you?", COLOR_PURPLE);
+    } else if (distance < 5) { // Something is too close
+      setLCDMessageAndColor("Danger!", "Please step back", COLOR_RED);
+    } else { // Nothing is close
+      setLCDMessageAndColor("My Name is Roz,", "The Wild Robot", COLOR_GREEN);
+    }
+    delay(1000); // Wait a little before checking again
+    return;
+  }
+
+  // Priority 3: Default display (nothing urgent is happening)
+  Serial.println("Proximity: Out of range");
+  setLCDMessageAndColor("My Name is Roz,", "The Wild Robot", COLOR_GREEN);
+
+  delay(10); // Small delay to stabilize readings
 }
